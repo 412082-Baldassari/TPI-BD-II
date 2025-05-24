@@ -1,0 +1,134 @@
+/* Paleta */
+:root {
+    --color1: #45afdc;
+    --color2: #39c1da;
+    --color3: #84dfe6;
+    --color4: #bfefed;
+    --color5: #eaefed;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--color5);
+    color: #333;
+}
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Header */
+.main-header {
+    background-color: var(--color1);
+    color: white;
+    padding: 1.5rem 0;
+}
+
+.logo {
+    font-size: 2rem;
+    text-align: center;
+}
+
+.navbar {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 1rem;
+}
+
+.navbar a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+
+.navbar a:hover {
+    color: var(--color4);
+}
+
+/* Hero */
+.hero {
+    background-color: var(--color2);
+    color: white;
+    text-align: center;
+    padding: 4rem 2rem;
+    border-radius: 0 0 2rem 2rem;
+}
+
+.hero-text h2 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.hero-text p {
+    font-size: 1.2rem;
+}
+
+/* Productos */
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 2rem;
+    padding: 2rem;
+}
+
+.product-card {
+    background-color: var(--color4);
+    border-radius: 1rem;
+    padding: 1rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+}
+
+.product-card img {
+    width: 100%;
+    border-radius: 1rem;
+}
+
+.product-card h3 {
+    margin: 1rem 0 0.5rem;
+}
+
+.price {
+    font-size: 1.2rem;
+    color: var(--color1);
+    font-weight: bold;
+    margin-bottom: 1rem;
+}
+
+.buy-btn {
+    background-color: var(--color3);
+    color: #fff;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.buy-btn:hover {
+    background-color: var(--color2);
+}
+
+/* Footer */
+.main-footer {
+    background-color: var(--color1);
+    color: white;
+    text-align: center;
+    padding: 1rem 0;
+    margin-top: 3rem;
+}
