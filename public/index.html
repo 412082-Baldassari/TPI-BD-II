@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reportes TPI - E-commerce</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="main-container">
+    <section id="productos-section">
+      <h2>🛍️ Catálogo</h2>
+      <div id="productos-container" class="card-grid"></div>
+    </section>
+
+    <section id="form-section">
+      <h2>➕ Agregar nuevo producto</h2>
+      <form id="form-agregar-producto">
+        <input type="text" name="nombre" placeholder="Nombre del producto" required>
+        <input type="number" name="precio" placeholder="Precio" required>
+        <input type="url" name="imagen" placeholder="URL de imagen (opcional)">
+        <input type="number" name="reseña_promedio" step="0.1" placeholder="Reseña promedio (opcional)">
+        <h4>📌 Campos adicionales</h4>
+        <div id="campos-adicionales"></div>
+        <button type="button" onclick="agregarCampoExtra()">➕ Agregar campo</button>
+        <button type="submit">Agregar producto</button>
+      </form>
+      <p id="mensaje-formulario"></p>
+    </section>
+
+    <h1>📊 Reportes del Sistema E-commerce (MongoDB)</h1>
+
+    <div class="botones">
+      <button onclick="cargarReporte('productos-mas-vendidos')">🛒 Productos más vendidos</button>
+      <button onclick="cargarReporte('clientes-top')">👤 Clientes que más compraron</button>
+      <button onclick="cargarReporte('stock-por-categoria')">📦 Stock por categoría</button>
+      <button onclick="cargarReporte('resenas-promedio')">⭐ Calificación promedio por producto</button>
+      <button onclick="cargarReporte('ventas-promedio')">📈 Promedio de venta diaria</button>
+    </div>
+
+    <hr />
+
+    <div id="resultado">
+      <p>Seleccioná un reporte para visualizar los resultados.</p>
+    </div>
+  </div>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
