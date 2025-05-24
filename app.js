@@ -224,3 +224,38 @@ app.post('/producto', async (req, res) => {
     res.status(500).json({ success: false });
   }
 });
+
+app.put('/producto/:id', async (req, res) => {
+  const db = mongoose.connection.db;
+  const productos = db.collection('productos');
+
+  try {
+    const id = req.params.id;
+    const update = req.body;
+
+    await productos.updateOne({ _id: id }, { $set: update });
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false });
+  }
+});
+
+app.delete('/producto/:id', async (req, res) => {
+  const db = mongoose.connection.db;
+  const productos = db.collection('productos');
+
+  try {
+    const id = req.params.id;
+    const resultado = await productos.deleteOne({ _id: id });
+
+    if (resultado.deletedCount === 1) {
+      res.json({ success: true });
+    } else {
+      res.json({ success: false, error: 'Producto no encontrado' });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false });
+  }
+});

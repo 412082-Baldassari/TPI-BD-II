@@ -105,6 +105,8 @@ async function verDetalles(id) {
           <p class="reseña-detalle">⭐ Reseña promedio: ${data.reseña_promedio?.toFixed(1) || 'Sin reseñas'}</p>
           ${extras}
           <button onclick="mostrarProductos()" class="volver-btn">⬅ Volver al catálogo</button>
+          <button onclick="editarProducto('${id}')" class="editar-btn">✏️ Editar producto</button>
+          <button onclick="eliminarProducto('${id}')" class="eliminar-btn">🗑️ Eliminar producto</button>
         </div>
       </div>
     `;
@@ -205,4 +207,126 @@ function agregarCampoExtra(nombre = '', valor = '') {
   wrapper.appendChild(inputValor);
   wrapper.appendChild(btnEliminar);
   contenedor.appendChild(wrapper);
+}
+
+async function editarProducto(id) {
+  const container = document.getElementById('productos-container');
+  container.classList.add('detalle-activo');
+  container.classList.remove('card-grid');
+  container.innerHTML = "<p>Cargando producto para editar...</p>";
+
+  try {
+    const res = await fetch(`/producto/${id}`);
+    const data = await res.json();
+
+    if (data.error) {
+      container.innerHTML = `<p>${data.error}</p>`;
+      return;
+    }
+
+    // Formulario de edición dinámico
+    const campos = Object.entries(data)
+      .filter(([key]) => key !== '_id')
+      .map(([key, value]) => {
+        const val = typeof value === 'object' ? JSON.stringify(value) : value;
+        return `
+          <div class="campo-extra">
+            <input type="text" class="campo-nombre" value="${key}" placeholder="Nombre del campo">
+            <input type="text" class="campo-valor" value="${val}" placeholder="Valor">
+            <button type="button" class="eliminar-campo" onclick="this.parentElement.remove()">❌</button>
+          </div>
+        `;
+      }).join('');
+
+    container.innerHTML = `
+      <div class="editar-producto">
+        <h2>✏️ Editar producto</h2>
+        <form id="form-editar-producto">
+          ${campos}
+          <button type="button" onclick="agregarCampoExtraEdicion()">➕ Agregar campo</button>
+          <br/><br/>
+          <button type="submit">💾 Guardar cambios</button>
+          <button type="button" onclick="verDetalles('${id}')" class="volver-btn">⬅ Cancelar</button>
+        </form>
+        <p id="mensaje-editar"></p>
+      </div>
+    `;
+
+    // Agregar evento de envío del formulario
+    document.getElementById('form-editar-producto').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const campos = container.querySelectorAll('.campo-extra');
+      const actualizacion = {};
+
+      campos.forEach(div => {
+        const nombre = div.querySelector('.campo-nombre').value.trim();
+        let valor = div.querySelector('.campo-valor').value.trim();
+        if (!nombre) return;
+
+        try {
+          valor = JSON.parse(valor);
+        } catch (_) {}
+
+        actualizacion[nombre] = valor;
+      });
+
+      const mensaje = document.getElementById('mensaje-editar');
+      try {
+        const res = await fetch(`/producto/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(actualizacion)
+        });
+
+        const resultado = await res.json();
+        if (resultado.success) {
+          mensaje.textContent = "✅ Producto actualizado.";
+          mensaje.style.color = "green";
+          verDetalles(id);
+        } else {
+          mensaje.textContent = "❌ Error al actualizar.";
+          mensaje.style.color = "red";
+        }
+      } catch (err) {
+        mensaje.textContent = "❌ Error de conexión.";
+        mensaje.style.color = "red";
+      }
+    });
+
+  } catch (err) {
+    container.innerHTML = "<p>Error al cargar producto.</p>";
+    console.error(err);
+  }
+}
+
+function agregarCampoExtraEdicion() {
+  const form = document.getElementById('form-editar-producto');
+  const campo = document.createElement('div');
+  campo.className = 'campo-extra';
+  campo.innerHTML = `
+    <input type="text" class="campo-nombre" placeholder="Nombre del campo">
+    <input type="text" class="campo-valor" placeholder="Valor">
+    <button type="button" class="eliminar-campo" onclick="this.parentElement.remove()">❌</button>
+  `;
+  form.insertBefore(campo, form.children[form.children.length - 3]); // antes del botón
+}
+
+async function eliminarProducto(id) {
+  const confirmar = confirm("¿Estás seguro de que querés eliminar este producto?");
+  if (!confirmar) return;
+
+  try {
+    const res = await fetch(`/producto/${id}`, { method: 'DELETE' });
+    const data = await res.json();
+
+    if (data.success) {
+      alert("✅ Producto eliminado con éxito.");
+      mostrarProductos();
+    } else {
+      alert("❌ No se pudo eliminar el producto.");
+    }
+  } catch (err) {
+    alert("❌ Error de conexión.");
+    console.error(err);
+  }
 }
