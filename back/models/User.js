@@ -5,12 +5,13 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
         trim: true,
+        unique: true
     },
     contrasena: {
-        type:String,
-        required:true,
-        trim:true,
-        lowercase:true
+        type: String,
+        required: true,
+        trim: true,
+        lowercase: true
     },
     email: {
         type: String,
@@ -27,6 +28,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         trim: true,
         required: true,
+    },
+    isAdmin: {
+        type: Boolean,
+        required: false
     },
     fechaRegistro: {
         type: Date,
