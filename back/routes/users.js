@@ -36,9 +36,9 @@ router.get('/email/:email', async (req, res) => {
 
 // POST crear nuevo usuario
 router.post('/', async (req, res) => {
-    const {nombre, contrasena, email, telefono, pais, isAdmin} = req.body;
+    const {nombre, contrasena, email, pais} = req.body;
 
-    if (!nombre || !contrasena || !email || !pais || !isAdmin) {
+    if (!nombre || !contrasena || !email || !pais) {
         return res.status(400).json({message: 'Nombre, contraseña, email y pais son obligatorios'});
     }
 
@@ -49,7 +49,7 @@ router.post('/', async (req, res) => {
             return res.status(400).json({message: 'El email ya está registrado'});
         }
 
-        const nuevoUsuario = new Usuario({nombre, contrasena, email, telefono, pais, isAdmin});
+        const nuevoUsuario = new Usuario({nombre, contrasena, email, pais});
         const usuarioGuardado = await nuevoUsuario.save();
         res.status(201).json(usuarioGuardado);
     } catch (error) {

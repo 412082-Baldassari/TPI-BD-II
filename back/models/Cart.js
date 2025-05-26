@@ -17,7 +17,7 @@ const cartItemSchema = new mongoose.Schema({
         required: true,
         min: 0,
     }
-});
+}, {strict: false});
 
 const cartSchema = new mongoose.Schema({
     usuario: {
@@ -26,11 +26,6 @@ const cartSchema = new mongoose.Schema({
         required: true,
     },
     items: [cartItemSchema],
-    total: {
-        type: Number,
-        default: 0,
-        min: 0,
-    },
     fechaCreacion: {
         type: Date,
         default: Date.now,
@@ -39,11 +34,13 @@ const cartSchema = new mongoose.Schema({
         type: Date,
         default: Date.now,
     }
-}, { strict: false });
+}, {strict: false});
 
 // Middleware para calcular el total antes de guardar
-cartSchema.pre('save', function(next) {
+cartSchema.pre('save', function (next) {
     this.total = this.items.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
     this.fechaActualizacion = new Date();
     next();
 });
+
+module.exports = mongoose.model('Cart', cartSchema);

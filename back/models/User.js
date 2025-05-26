@@ -20,10 +20,6 @@ const userSchema = new mongoose.Schema({
         trim: true,
         lowercase: true,
     },
-    telefono: {
-        type: String,
-        trim: true,
-    },
     pais: {
         type: String,
         trim: true,
