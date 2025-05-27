@@ -25,20 +25,21 @@ router.get('/:id', async (req, res) => {
 
 // POST crear nuevo producto
 router.post('/', async (req, res) => {
-    const { nombre, descripcion, precio, imagenUrl } = req.body;
+    const { nombre, precio } = req.body;
 
     if (!nombre || precio == null) {
         return res.status(400).json({ message: 'Nombre y precio son obligatorios' });
     }
 
     try {
-        const nuevoProducto = new Producto({ nombre, descripcion, precio, imagenUrl });
+        const nuevoProducto = new Producto(req.body);
         const productoGuardado = await nuevoProducto.save();
         res.status(201).json(productoGuardado);
     } catch (error) {
         res.status(500).json({ message: 'Error al crear producto' });
     }
 });
+
 
 // PUT actualizar producto
 router.put('/:id', async (req, res) => {

@@ -4,6 +4,7 @@ const connectDB = require('./config/db');
 const productRoutes = require('./routes/products');
 const userRoutes = require('./routes/users');
 const cartRoutes = require('./routes/carts');
+const ventasRoutes=require('./routes/ventas')
 
 require('dotenv').config();
 
@@ -18,7 +19,7 @@ app.use(express.json());
 app.use('/api/products', productRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/carts', cartRoutes);
-
+app.use('/api/ventas', ventasRoutes);
 // Ruta de prueba
 app.get('/', (req, res) => {
     res.send('Backend funcionando correctamente');

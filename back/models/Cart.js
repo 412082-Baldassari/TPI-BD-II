@@ -34,7 +34,7 @@ const cartSchema = new mongoose.Schema({
         type: Date,
         default: Date.now,
     }
-}, {strict: false});
+}, {strict: true});
 
 // Middleware para calcular el total antes de guardar
 cartSchema.pre('save', function (next) {

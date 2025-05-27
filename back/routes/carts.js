@@ -15,16 +15,22 @@ router.get('/', async (req, res) => {
     }
 });
 
-// GET carrito por ID
-router.get('/:id', async (req, res) => {
+// GET /api/carts/:userId
+router.get('/:userId', async (req, res) => {
+    const { userId } = req.params;
+
     try {
-        const carrito = await Carrito.findById(req.params.id)
-            .populate('usuario', 'nombre email')
-            .populate('items.producto', 'nombre precio descripcion imagenUrl');
-        if (!carrito) return res.status(404).json({message: 'Carrito no encontrado'});
+        const carrito = await Carrito.findOne({ usuario: userId })
+            .populate('usuario', 'nombre email pais')
+            .populate('items.producto', 'nombre precio');
+
+        if (!carrito) {
+            return res.status(404).json({ message: 'Carrito no encontrado para este usuario' });
+        }
+
         res.json(carrito);
     } catch (error) {
-        res.status(500).json({message: 'Error al buscar carrito'});
+        res.status(500).json({ message: 'Error al obtener el carrito del usuario' });
     }
 });
 
@@ -48,31 +54,34 @@ router.post('/', async (req, res) => {
     }
 });
 
-// PUT actualizar cantidad de un item del carrito
-router.put('/:id/items/:itemId', async (req, res) => {
-    const {cantidad} = req.body;
-
-    if (!cantidad || cantidad < 1) {
-        return res.status(400).json({message: 'Cantidad debe ser mayor a 0'});
-    }
-
+// PUT /api/carts/:id
+// Actualiza los items del carrito del usuario con el ID proporcionado
+router.put('/:id', async (req, res) => {
     try {
-        const carrito = await Carrito.findById(req.params.id);
-        if (!carrito) return res.status(404).json({message: 'Carrito no encontrado'});
+        const userId = req.params.id;
+        const nuevosItems = req.body.items;
 
-        const item = carrito.items.id(req.params.itemId);
-        if (!item) return res.status(404).json({message: 'Item no encontrado en el carrito'});
+        if (!Array.isArray(nuevosItems)) {
+            return res.status(400).json({message: 'Los items deben ser un arreglo'});
+        }
 
-        item.cantidad = parseInt(cantidad);
+        const carrito = await Carrito.findOne({usuario: userId});
+
+        if (!carrito) {
+            return res.status(404).json({message: 'Carrito no encontrado para este usuario'});
+        }
+
+        carrito.items = nuevosItems;
         await carrito.save();
 
         const carritoActualizado = await Carrito.findById(carrito._id)
             .populate('usuario', 'nombre email')
-            .populate('items.producto', 'nombre precio descripcion imagenUrl');
+            .populate('items.producto');
 
         res.json(carritoActualizado);
     } catch (error) {
-        res.status(500).json({message: 'Error al actualizar item del carrito'});
+        console.error(error);
+        res.status(500).json({message: 'Error al actualizar el carrito', error: error.message});
     }
 });
 

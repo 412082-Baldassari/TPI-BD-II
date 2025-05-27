@@ -20,10 +20,19 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     function agregarAlCarrito(producto) {
-        carrito.push(producto);
+        const index = carrito.findIndex(p => p._id === producto._id);
+
+        if (index !== -1) {
+            carrito[index].cantidad += 1;
+        } else {
+            carrito.push({...producto, cantidad: 1});
+        }
+
         localStorage.setItem("carrito", JSON.stringify(carrito));
+        console.log("Carrito agregado/modificado:", JSON.stringify(carrito, null, 2));
         renderizarCarrito();
     }
+
 
     function renderizarCarrito() {
         cartItemsContainer.innerHTML = "";
@@ -36,21 +45,57 @@ document.addEventListener("DOMContentLoaded", () => {
             const item = document.createElement("div");
             item.classList.add("cart-item");
             item.innerHTML = `
-        <h4>${prod.nombre}</h4>
-        <p>$${prod.precio}</p>
-        <button class="remove-btn" data-index="${index}">Eliminar</button>
-    `;
+            <h4>${prod.nombre}</h4>
+            <p>$${prod.precio}</p>
+            <div class="cantidad-container">
+                Cantidad: <span class="cantidad">${prod.cantidad}</span>
+                <button class="btn-aumentar" data-index="${index}">+</button>
+                <button class="btn-disminuir" data-index="${index}">-</button>
+            </div>
+            <button class="remove-btn" data-index="${index}">Eliminar</button>
+        `;
             cartItemsContainer.appendChild(item);
         });
 
+        // Botones para eliminar
         document.querySelectorAll(".remove-btn").forEach(btn => {
             btn.addEventListener("click", (e) => {
                 const index = e.target.getAttribute("data-index");
-                carrito.splice(index, 1); // Eliminar del array
-                renderizarCarrito();      // Volver a dibujar
+                carrito.splice(index, 1);
+                actualizarLocalStorageYRender();
+            });
+        });
+
+        // Botones para aumentar cantidad
+        document.querySelectorAll(".btn-aumentar").forEach(btn => {
+            btn.addEventListener("click", (e) => {
+                const index = e.target.getAttribute("data-index");
+                carrito[index].cantidad += 1;
+                actualizarLocalStorageYRender();
+            });
+        });
+
+        // Botones para disminuir cantidad
+        document.querySelectorAll(".btn-disminuir").forEach(btn => {
+            btn.addEventListener("click", (e) => {
+                const index = e.target.getAttribute("data-index");
+                if (carrito[index].cantidad > 1) {
+                    carrito[index].cantidad -= 1;
+                } else {
+                    // Si la cantidad llega a 0, eliminamos el producto
+                    carrito.splice(index, 1);
+                }
+                actualizarLocalStorageYRender();
             });
         });
     }
+
+    function actualizarLocalStorageYRender() {
+        localStorage.setItem("carrito", JSON.stringify(carrito));
+        console.log("Carrito actualizado:", JSON.stringify(carrito, null, 2, localStorage.userId));
+        renderizarCarrito();
+    }
+
 
     renderizarCarrito();
 
@@ -161,6 +206,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         if (key && value) product[key] = value;
                     });
 
+                    console.log(product)
                     try {
                         const response = await fetch("http://localhost:5000/api/products", {
                             method: "POST",
@@ -196,7 +242,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <button class="buy-btn" id="add-to-cart-btn">Agregar al carrito</button>
                     <button class="back-btn">Volver</button>
                 </div>
-            </section>
+            </section>  
         `;
 
         document.getElementById("add-to-cart-btn").addEventListener("click", () => {
@@ -211,21 +257,117 @@ document.addEventListener("DOMContentLoaded", () => {
     // Mostrar "Inicio" por defecto
     renderSection("Inicio");
 
-    // Botón de cerrar sesión
-    const logoutBtn = document.getElementById("logout-btn");
-    if (logoutBtn) {
-        logoutBtn.addEventListener("click", () => {
-            localStorage.removeItem("usuarioAutenticado");
-            localStorage.removeItem("carrito");
-            window.location.href = "login.html";
-        });
-    }
-
     // Cierre de sesión por inactividad
-    setTimeout(() => {
+    setTimeout(async () => {
+        await guardarCarritoEnServidor();
         localStorage.removeItem("usuarioAutenticado");
         localStorage.removeItem("carrito");
         alert("Sesión expirada. Serás redirigido al login.");
         window.location.href = "login.html";
     }, 600000); // 10 minutos
+
+
+    async function guardarCarritoEnServidor() {
+        const userId = localStorage.getItem("userId");
+        if (!userId || !carrito) return;
+
+        // Si carrito está vacío, items será []
+        const items = carrito.map(prod => ({
+            producto: prod._id,
+            cantidad: prod.cantidad || 1,
+            precio: prod.precio
+        }));
+
+        console.log("Carrito a guardar:", items, userId);
+
+        try {
+            await fetch(`http://localhost:5000/api/carts/${userId}`, {
+                method: "PUT",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({items})
+            });
+        } catch (error) {
+            console.error("Error al guardar el carrito:", error);
+        }
+    }
+
+    // Botón de cerrar sesión
+    /* const logoutBtn = document.getElementById("logout-btn");
+     if (logoutBtn) {
+         logoutBtn.addEventListener("click", () => {
+             localStorage.removeItem("usuarioAutenticado");
+             localStorage.removeItem("carrito");
+             window.location.href = "login.html";
+         });
+     }*/
+
+    document.getElementById("logout-btn").addEventListener("click", async () => {
+        await guardarCarritoEnServidor();
+        localStorage.removeItem("usuarioAutenticado");
+        window.location.href = "login.html";
+    });
+
+    window.addEventListener("beforeunload", async (e) => {
+        await guardarCarritoEnServidor();
+    });
+
+    const checkoutBtn = document.getElementById("checkout-btn");
+    checkoutBtn.addEventListener("click", () => {
+        renderPasarelaDePago();
+    });
+
+    function renderPasarelaDePago() {
+        const total = carrito.reduce((acc, prod) => acc + prod.precio * prod.cantidad, 0);
+        const resumenHTML = carrito.map(prod => `
+        <div class="resumen-item">
+            <strong>${prod.nombre}</strong> x${prod.cantidad} - $${(prod.precio * prod.cantidad).toFixed(2)}
+        </div>
+    `).join("");
+
+        mainContent.innerHTML = `
+        <section class="pasarela-pago">
+            <h2>Resumen de Compra</h2>
+            <div class="resumen-carrito">${resumenHTML || "<p>El carrito está vacío.</p>"}</div>
+            <h3>Total: $${total.toFixed(2)}</h3>
+            <button id="confirmar-pago-btn" ${carrito.length === 0 ? "disabled" : ""}>Confirmar Pago</button>
+            <button id="cancelar-pago-btn">Cancelar</button>
+        </section>
+    `;
+
+        document.getElementById("confirmar-pago-btn").addEventListener("click", async () => {
+            try {
+                if (carrito.length === 0) {
+                    alert("El carrito está vacío. Agregá productos antes de confirmar el pago.");
+                    return;
+                }
+
+                const userId = localStorage.getItem("userId");
+                if (!userId) {
+                    alert("Usuario no identificado");
+                    return;
+                }
+
+                const response = await fetch(`http://localhost:5000/api/ventas/${userId}`, {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify(carrito)
+                });
+
+                if (!response.ok) throw new Error("Error en el pago");
+
+                alert("¡Pago realizado con éxito!");
+                carrito = [];
+                actualizarLocalStorageYRender();
+                renderSection("Inicio");
+            } catch (err) {
+                alert("Hubo un problema al procesar el pago: " + err.message);
+            }
+        });
+
+        document.getElementById("cancelar-pago-btn").addEventListener("click", () => {
+            renderSection("Inicio");
+        });
+    }
 });
+
+
