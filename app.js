@@ -164,6 +164,23 @@ document.addEventListener("DOMContentLoaded", () => {
                                     <label>Precio *</label>
                                     <input type="number" step="0.01" name="precio" required />
                                 </div>
+                                        <div>
+                                            <label>País *</label>
+                                            <select name="pais" required>
+                                                <option value="">Seleccioná tu país</option>
+                                                <option value="Argentina">Argentina</option>
+                                                <option value="Bolivia">Bolivia</option>
+                                                <option value="Brasil">Brasil</option>
+                                                <option value="Chile">Chile</option>
+                                                <option value="Colombia">Colombia</option>
+                                                <option value="Ecuador">Ecuador</option>
+                                                <option value="México">México</option>
+                                                <option value="Paraguay">Paraguay</option>
+                                                <option value="Perú">Perú</option>
+                                                <option value="Uruguay">Uruguay</option>
+                                                <option value="Venezuela">Venezuela</option>
+                                            </select>
+                                        </div>
                                 <div id="extra-fields"></div>
                                 <button type="button" id="add-field-btn">+ Agregar campo</button>
                                 <br><br>
@@ -198,6 +215,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     const product = {
                         nombre: formData.get("nombre"),
                         precio: parseFloat(formData.get("precio")),
+                        pais: formData.get("pais")
                     };
 
                     document.querySelectorAll("#extra-fields > div").forEach(div => {

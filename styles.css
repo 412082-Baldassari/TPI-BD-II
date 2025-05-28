@@ -434,4 +434,94 @@ body {
     }
 }
 
+.offers {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+}
 
+.form-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    background-color: var(--color4);
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 500px;
+}
+
+.form-wrapper h2 {
+    margin: 0;
+    color: var(--color1);
+}
+
+.form-wrapper form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+}
+
+.form-wrapper input[type="text"],
+.form-wrapper input[type="number"],
+.form-wrapper select {
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid #ccc;
+    width: 100%;
+    font-size: 1rem;
+    background-color: #fff;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.form-wrapper input:focus,
+.form-wrapper select:focus {
+    border-color: var(--color1);
+    box-shadow: 0 0 0 3px rgba(69, 175, 220, 0.3);
+    outline: none;
+}
+
+.form-wrapper button {
+    padding: 0.5rem 1rem;
+    background-color: var(--color1);
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.form-wrapper button:hover {
+    background-color: var(--color2);
+}
+
+/* Campos extras */
+#extra-fields > div {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    width: 100%;
+}
+
+#extra-fields input[type="text"] {
+    flex: 1;
+}
+
+/* Responsive */
+@media (max-width: 500px) {
+    .form-wrapper {
+        padding: 1rem;
+    }
+
+    .form-wrapper input,
+    .form-wrapper select,
+    .form-wrapper button {
+        font-size: 0.95rem;
+    }
+}
