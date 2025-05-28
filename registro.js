@@ -31,6 +31,7 @@ document.getElementById("registro-form").addEventListener("submit", async functi
             const usuarioRegistrado = await respuesta.json();
             const userId = usuarioRegistrado._id;
             localStorage.setItem("userId", userId);
+            localStorage.setItem("userPais", pais)
 
             // Crear carrito automáticamente
             try {

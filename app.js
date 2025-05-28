@@ -123,32 +123,91 @@ document.addEventListener("DOMContentLoaded", () => {
 
             case "Productos":
                 mainContent.innerHTML = `<h2 style="text-align:center; padding: 2rem;">Cargando productos...</h2>`;
+
+                const userPais = localStorage.getItem("userPais");
+                console.log(userPais)
+                const productosPorPagina = 16;
+                let paginaActual = 1;
+                let productosFiltrados = [];
+
                 try {
                     const res = await fetch("http://localhost:5000/api/products");
-                    const productos = await res.json();
+                    const todosLosProductos = await res.json();
 
-                    mainContent.innerHTML = `<section class="product-list"></section>`;
-                    const productList = document.querySelector(".product-list");
+                    productosFiltrados = todosLosProductos.filter(p => p.pais === userPais);
 
-                    productos.forEach((producto) => {
-                        const card = document.createElement("div");
-                        card.classList.add("product-card-horizontal");
-                        card.innerHTML = `
-                            <img src="${producto.imagenUrl || 'https://via.placeholder.com/150'}" alt="${producto.nombre}">
-                            <div class="product-info">
-                                <h3>${producto.nombre}</h3>
-                                <p class="price">$${producto.precio}</p>
-                            </div>
-                        `;
-                        card.addEventListener("click", () => renderDetalle(producto));
-                        productList.appendChild(card);
-                    });
-
+                    mostrarPagina(paginaActual);
                 } catch (error) {
                     console.error("Error al obtener productos:", error);
                     mainContent.innerHTML = `<p style="text-align:center; color:red;">No se pudieron cargar los productos.</p>`;
                 }
+
+            function mostrarPagina(pagina) {
+                paginaActual = pagina;
+                const inicio = (pagina - 1) * productosPorPagina;
+                const fin = inicio + productosPorPagina;
+                const productosPagina = productosFiltrados.slice(inicio, fin);
+
+                mainContent.innerHTML = `
+                    <section class="product-list"></section>
+                    <div class="pagination" style="text-align:center; padding: 1rem;"></div>
+                `;
+
+                const productList = document.querySelector(".product-list");
+
+                productosPagina.forEach((producto) => {
+                    const card = document.createElement("div");
+                    card.classList.add("product-card-horizontal");
+                    card.innerHTML = `
+                        <img src="${producto.imagenUrl || 'https://via.placeholder.com/150'}" alt="${producto.nombre}">
+                        <div class="product-info">
+                            <h3>${producto.nombre}</h3>
+                            <p class="price">$${producto.precio}</p>
+                        </div>
+                    `;
+                    card.addEventListener("click", () => renderDetalle(producto));
+                    productList.appendChild(card);
+                });
+
+                generarPaginacion();
+            }
+
+            function generarPaginacion() {
+                const totalPaginas = Math.ceil(productosFiltrados.length / productosPorPagina);
+                const paginationDiv = document.querySelector(".pagination");
+                paginationDiv.innerHTML = "";
+
+                // Botón anterior
+                const btnAnterior = document.createElement("button");
+                btnAnterior.textContent = "« Anterior";
+                btnAnterior.disabled = paginaActual === 1;
+                btnAnterior.style.margin = "0.25rem";
+                btnAnterior.addEventListener("click", () => mostrarPagina(paginaActual - 1));
+                paginationDiv.appendChild(btnAnterior);
+
+                // Botones numerados
+                for (let i = 1; i <= totalPaginas; i++) {
+                    const btn = document.createElement("button");
+                    btn.textContent = i;
+                    btn.style.margin = "0.25rem";
+                    if (i === paginaActual) {
+                        btn.disabled = true;
+                    }
+                    btn.addEventListener("click", () => mostrarPagina(i));
+                    paginationDiv.appendChild(btn);
+                }
+
+                // Botón siguiente
+                const btnSiguiente = document.createElement("button");
+                btnSiguiente.textContent = "Siguiente »";
+                btnSiguiente.disabled = paginaActual === totalPaginas;
+                btnSiguiente.style.margin = "0.25rem";
+                btnSiguiente.addEventListener("click", () => mostrarPagina(paginaActual + 1));
+                paginationDiv.appendChild(btnSiguiente);
+            }
+
                 break;
+
 
             case "Nuevo producto":
                 mainContent.innerHTML = `
@@ -163,6 +222,10 @@ document.addEventListener("DOMContentLoaded", () => {
                                 <div>
                                     <label>Precio *</label>
                                     <input type="number" step="0.01" name="precio" required />
+                                </div>
+                                <div>
+                                    <label>URL de imagen *</label>
+                                    <input type="text" step="0.01" name="url" required />
                                 </div>
                                         <div>
                                             <label>País *</label>
@@ -215,6 +278,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     const product = {
                         nombre: formData.get("nombre"),
                         precio: parseFloat(formData.get("precio")),
+                        imagenUrl: formData.get("url"),
                         pais: formData.get("pais")
                     };
 
@@ -241,6 +305,152 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                 });
                 break;
+            case "Reportes":
+                mainContent.innerHTML = `
+                        <section class="reportes-section" style="padding: 1rem;">
+                            <h2>Reportes</h2>
+                            <label for="reporte-select">Seleccioná un reporte:</label>
+                            <select id="reporte-select" style="margin-left: 0.5rem;">
+                                <option value="clientesMasCompraron">Clientes que más compraron</option>
+                                <option value="ventasPorMes">Total de ventas por mes</option>
+                                <option value="paisesMayorCantidad">Países con mayor cantidad comprada</option>
+                                <option value="promedioCompraDiaria">Promedio de compra diaria</option>
+                                <option value="productosMasVendidos">Productos más vendidos</option> <!-- Elegí esta -->
+                                <option value="ventasPorRegion">Ventas por región</option> <!-- Elegí esta -->
+                            </select>
+                            <button id="enviar-reporte-btn" style="margin-left: 1rem;">Generar reporte</button>
+                            <div id="resultado-reporte" style="margin-top: 1rem;"></div>
+                        </section>
+                    `;
+
+                document.getElementById("enviar-reporte-btn").addEventListener("click", async () => {
+                    const select = document.getElementById("reporte-select");
+                    const reporte = select.value;
+                    const resultadoDiv = document.getElementById("resultado-reporte");
+
+                    resultadoDiv.innerHTML = "<p>Cargando reporte...</p>";
+
+                    try {
+                        const url = "http://localhost:5000/api/ventas";
+                        const res = await fetch(url);
+                        if (!res.ok) throw new Error("Error al obtener el reporte");
+
+                        const data = await res.json();
+                        resultadoDiv.innerHTML = '<canvas id="grafico" width="600" height="400"></canvas>';
+                        const ctx = document.getElementById("grafico").getContext("2d");
+
+                        let chartData = {};
+                        let title = "";
+
+                        switch (reporte) {
+                            case "productosMasVendidos":
+                                chartData = data.reduce((acc, venta) => {
+                                    acc[venta.nombre] = (acc[venta.nombre] || 0) + venta.cantidad;
+                                    return acc;
+                                }, {});
+                                title = "Productos más vendidos";
+                                break;
+
+                            case "ventasPorMes":
+                                chartData = data.reduce((acc, venta) => {
+                                    const mes = new Date(venta.createdAt).toLocaleString('default', { month: 'short', year: 'numeric' });
+                                    acc[mes] = (acc[mes] || 0) + venta.precio * venta.cantidad;
+                                    return acc;
+                                }, {});
+                                title = "Total de ventas por mes";
+                                break;
+
+                            case "paisesMayorCantidad":
+                                chartData = data.reduce((acc, venta) => {
+                                    acc[venta.pais] = (acc[venta.pais] || 0) + venta.cantidad;
+                                    return acc;
+                                }, {});
+                                title = "Países con mayor cantidad comprada";
+                                break;
+
+                            case "ventasPorRegion":
+                                chartData = data.reduce((acc, venta) => {
+                                    acc[venta.pais] = (acc[venta.pais] || 0) + venta.precio * venta.cantidad;
+                                    return acc;
+                                }, {});
+                                title = "Ventas por región (país)";
+                                break;
+
+                            case "promedioCompraDiaria":
+                                chartData = data.reduce((acc, venta) => {
+                                    const dia = new Date(venta.createdAt).toISOString().split("T")[0];
+                                    acc[dia] = (acc[dia] || 0) + venta.precio * venta.cantidad;
+                                    return acc;
+                                }, {});
+                                title = "Promedio de compra diaria";
+                                break;
+
+                            case "clientesMasCompraron":
+                            {
+                                const acumuladoPorUsuario = data.reduce((acc, venta) => {
+                                    acc[venta.usuarioId] = (acc[venta.usuarioId] || 0) + venta.precio * venta.cantidad;
+                                    return acc;
+                                }, {});
+
+                                const resUsuarios = await fetch("http://localhost:5000/api/users");
+                                if (!resUsuarios.ok) throw new Error("Error al obtener los usuarios");
+
+                                const usuarios = await resUsuarios.json();
+                                const usuariosPorId = {};
+                                usuarios.forEach(u => usuariosPorId[u._id] = u.nombre);
+
+                                // Reemplazar IDs por nombres
+                                chartData = {};
+                                for (const userId in acumuladoPorUsuario) {
+                                    const nombre = usuariosPorId[userId] || `ID: ${userId}`;
+                                    chartData[nombre] = acumuladoPorUsuario[userId];
+                                }
+
+                                title = "Clientes que más compraron";
+                            }
+                                break;
+
+                            default:
+                                resultadoDiv.innerHTML = "<p>Reporte no reconocido.</p>";
+                                return;
+                        }
+
+                        // Destruir gráfico anterior si existe
+                        if (window.myChart) {
+                            window.myChart.destroy();
+                        }
+
+                        window.myChart = new Chart(ctx, {
+                            type: "bar",
+                            data: {
+                                labels: Object.keys(chartData),
+                                datasets: [{
+                                    label: title,
+                                    data: Object.values(chartData),
+                                    backgroundColor: "rgba(54, 162, 235, 0.6)",
+                                    borderColor: "rgba(54, 162, 235, 1)",
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                plugins: {
+                                    legend: { display: false },
+                                    title: { display: true, text: title }
+                                },
+                                scales: {
+                                    y: { beginAtZero: true }
+                                }
+                            }
+                        });
+
+                    } catch (error) {
+                        resultadoDiv.innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
+                    }
+                });
+
+                break;
+
         }
     }
 
@@ -309,16 +519,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // Botón de cerrar sesión
-    /* const logoutBtn = document.getElementById("logout-btn");
-     if (logoutBtn) {
-         logoutBtn.addEventListener("click", () => {
-             localStorage.removeItem("usuarioAutenticado");
-             localStorage.removeItem("carrito");
-             window.location.href = "login.html";
-         });
-     }*/
-
     document.getElementById("logout-btn").addEventListener("click", async () => {
         await guardarCarritoEnServidor();
         localStorage.removeItem("usuarioAutenticado");
@@ -364,7 +564,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     alert("Usuario no identificado");
                     return;
                 }
-
+                console.log(carrito)
                 const response = await fetch(`http://localhost:5000/api/ventas/${userId}`, {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},

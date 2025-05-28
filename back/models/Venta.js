@@ -6,7 +6,8 @@ const ventaSchema = new mongoose.Schema({
     cantidad: {type: Number, required: true},
     usuarioId: {type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Usuario'}, // Asocia la venta a un usuario
 }, {
-    timestamps: true
+    timestamps: true,
+    strict: false
 });
 
 module.exports = mongoose.model('Venta', ventaSchema);
