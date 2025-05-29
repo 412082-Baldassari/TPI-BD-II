@@ -232,15 +232,15 @@ document.addEventListener("DOMContentLoaded", () => {
                                             <select name="pais" required>
                                                 <option value="">Seleccioná tu país</option>
                                                 <option value="Argentina">Argentina</option>
-                                                <option value="Bolivia">Bolivia</option>
-                                                <option value="Brasil">Brasil</option>
-                                                <option value="Chile">Chile</option>
-                                                <option value="Colombia">Colombia</option>
+                                                <option value="China">China</option>
                                                 <option value="Ecuador">Ecuador</option>
+                                                <option value="Noruega">Noruega</option>
+                                                <option value="EEUU">EEUU</option>
+                                                <option value="Alemania">Alemania</option>
                                                 <option value="México">México</option>
-                                                <option value="Paraguay">Paraguay</option>
+                                                <option value="Australia">Australia</option>
                                                 <option value="Perú">Perú</option>
-                                                <option value="Uruguay">Uruguay</option>
+                                                <option value="Francia">Francia</option>
                                                 <option value="Venezuela">Venezuela</option>
                                             </select>
                                         </div>
@@ -307,20 +307,22 @@ document.addEventListener("DOMContentLoaded", () => {
                 break;
             case "Reportes":
                 mainContent.innerHTML = `
-                        <section class="reportes-section" style="padding: 1rem;">
+                    <section class="reportes-section">
+                        <div class="reportes-header">
                             <h2>Reportes</h2>
                             <label for="reporte-select">Seleccioná un reporte:</label>
-                            <select id="reporte-select" style="margin-left: 0.5rem;">
+                            <select id="reporte-select">
                                 <option value="clientesMasCompraron">Clientes que más compraron</option>
                                 <option value="ventasPorMes">Total de ventas por mes</option>
                                 <option value="paisesMayorCantidad">Países con mayor cantidad comprada</option>
                                 <option value="promedioCompraDiaria">Promedio de compra diaria</option>
-                                <option value="productosMasVendidos">Productos más vendidos</option> <!-- Elegí esta -->
-                                <option value="ventasPorRegion">Ventas por región</option> <!-- Elegí esta -->
+                                <option value="productosMasVendidos">Productos más vendidos</option>
+                                <option value="ventasPorRegion">Ventas por región</option>
                             </select>
-                            <button id="enviar-reporte-btn" style="margin-left: 1rem;">Generar reporte</button>
-                            <div id="resultado-reporte" style="margin-top: 1rem;"></div>
-                        </section>
+                            <button id="enviar-reporte-btn">Generar reporte</button>
+                        </div>
+                        <div id="resultado-reporte" class="reporte-resultado"></div>
+                    </section>
                     `;
 
                 document.getElementById("enviar-reporte-btn").addEventListener("click", async () => {
@@ -353,7 +355,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
                             case "ventasPorMes":
                                 chartData = data.reduce((acc, venta) => {
-                                    const mes = new Date(venta.createdAt).toLocaleString('default', { month: 'short', year: 'numeric' });
+                                    const mes = new Date(venta.createdAt).toLocaleString('default', {
+                                        month: 'short',
+                                        year: 'numeric'
+                                    });
                                     acc[mes] = (acc[mes] || 0) + venta.precio * venta.cantidad;
                                     return acc;
                                 }, {});
@@ -385,8 +390,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 title = "Promedio de compra diaria";
                                 break;
 
-                            case "clientesMasCompraron":
-                            {
+                            case "clientesMasCompraron": {
                                 const acumuladoPorUsuario = data.reduce((acc, venta) => {
                                     acc[venta.usuarioId] = (acc[venta.usuarioId] || 0) + venta.precio * venta.cantidad;
                                     return acc;
@@ -435,11 +439,11 @@ document.addEventListener("DOMContentLoaded", () => {
                             options: {
                                 responsive: true,
                                 plugins: {
-                                    legend: { display: false },
-                                    title: { display: true, text: title }
+                                    legend: {display: false},
+                                    title: {display: true, text: title}
                                 },
                                 scales: {
-                                    y: { beginAtZero: true }
+                                    y: {beginAtZero: true}
                                 }
                             }
                         });
