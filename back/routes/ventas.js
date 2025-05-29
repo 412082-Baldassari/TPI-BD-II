@@ -45,5 +45,27 @@ router.delete('/', async (req, res) => {
     }
 });
 
+// PUT /api/ventas/:id
+router.put('/:id', async (req, res) => {
+    const {id} = req.params;
+    const datosActualizados = req.body;
+
+    try {
+        const ventaActualizada = await Venta.findByIdAndUpdate(id, datosActualizados, {
+            new: true, // retorna el documento actualizado
+            runValidators: true
+        });
+
+        if (!ventaActualizada) {
+            return res.status(404).json({error: 'Venta no encontrada'});
+        }
+
+        res.json(ventaActualizada);
+    } catch (error) {
+        console.error("❌ Error al actualizar la venta:", error);
+        res.status(500).json({error: 'Error al actualizar la venta', details: error.message});
+    }
+});
+
 
 module.exports = router;
