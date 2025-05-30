@@ -17,7 +17,10 @@ document.getElementById("login-form").addEventListener("submit", async function 
             localStorage.setItem("usuarioAutenticado", "true");
             localStorage.setItem("usuarioNombre", usuarioEncontrado.nombre);
             localStorage.setItem("userId", usuarioEncontrado._id);
-            localStorage.setItem("userPais", usuarioEncontrado.pais)
+            localStorage.setItem("userPais", usuarioEncontrado.pais);
+            if (usuarioEncontrado.isAdmin) {
+                localStorage.setItem("isAdmin", "true");
+            }
 
             // Obtener el carrito del servidor
             const resCarrito = await fetch(`http://localhost:5000/api/carts/${usuarioEncontrado._id}`);

@@ -15,8 +15,29 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: var(--color5);
-    color: #333;
+    min-height: 100vh;
+    margin: 0;
+    background: linear-gradient(135deg,
+    #318aac,
+    #32a8bd,
+    #8ae4ec,
+    #bfefed,
+    #fbfafa
+    );
+    background-size: 200% 200%;
+    animation: gradientMove 6s ease infinite;
+}
+
+@keyframes gradientMove {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
 }
 
 .container {
@@ -525,6 +546,7 @@ body {
         font-size: 0.95rem;
     }
 }
+
 .pagination {
     text-align: center;
     padding: 1rem;

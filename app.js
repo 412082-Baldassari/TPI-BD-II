@@ -8,6 +8,12 @@ if (autenticado !== "true") {
 document.addEventListener("DOMContentLoaded", () => {
     const mainContent = document.querySelector(".main-content");
 
+    if (localStorage.getItem("isAdmin") === "true") {
+        document.querySelectorAll(".renderIsAdmin").forEach(link => {
+            link.style.display = "inline-block";
+        });
+    }
+    console.log(localStorage.getItem("isAdmin"),"despues funcion")
     // Carrito persistente
     let carrito = JSON.parse(localStorage.getItem("carrito")) || [];
 
@@ -315,9 +321,10 @@ document.addEventListener("DOMContentLoaded", () => {
                                 <option value="clientesMasCompraron">Clientes que más compraron</option>
                                 <option value="ventasPorMes">Total de ventas por mes</option>
                                 <option value="paisesMayorCantidad">Países con mayor cantidad comprada</option>
-                                <option value="promedioCompraDiaria">Promedio de compra diaria</option>
+                                <option value="promedioCompraDiaria">Total de compra diaria</option>
                                 <option value="productosMasVendidos">Productos más vendidos</option>
                                 <option value="ventasPorRegion">Ventas por región</option>
+                                <option value="ventasPorCategoria">Ventas por categoría</option>
                             </select>
                             <button id="enviar-reporte-btn">Generar reporte</button>
                         </div>
@@ -387,7 +394,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                     acc[dia] = (acc[dia] || 0) + venta.precio * venta.cantidad;
                                     return acc;
                                 }, {});
-                                title = "Promedio de compra diaria";
+                                title = "Total de compra diaria";
                                 break;
 
                             case "clientesMasCompraron": {
@@ -412,6 +419,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
                                 title = "Clientes que más compraron";
                             }
+                                break;
+                            case "ventasPorCategoria":
+                                chartData = data.reduce((acc, venta) => {
+                                    const categoria = (venta.categoria && venta.categoria.trim() !== "")
+                                        ? venta.categoria
+                                        : "Otros";
+
+                                    acc[categoria] = (acc[categoria] || 0) + venta.cantidad;
+                                    return acc;
+                                }, {});
+                                title = "Cantidad de ventas por categoría";
                                 break;
 
                             default:
@@ -452,10 +470,9 @@ document.addEventListener("DOMContentLoaded", () => {
                         resultadoDiv.innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
                     }
                 });
-
                 break;
 
-        }
+            }
     }
 
     function renderDetalle(producto) {
@@ -526,6 +543,8 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("logout-btn").addEventListener("click", async () => {
         await guardarCarritoEnServidor();
         localStorage.removeItem("usuarioAutenticado");
+        localStorage.clear();
+        console.log("Logout",localStorage.getItem("isAdmin"))
         window.location.href = "login.html";
     });
 
